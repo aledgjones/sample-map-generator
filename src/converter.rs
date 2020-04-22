@@ -1,39 +1,26 @@
 use crate::progress::{next, start};
 use crate::utils::get_pitch;
+use crate::utils::{clear_directory, delete_directory};
 use base64::encode;
 use std::collections::HashMap;
-use std::fmt;
+use std::env;
 use std::fs::read;
 use std::fs::read_dir;
 use std::io::Result;
 use std::path::PathBuf;
 use std::process::Command;
 
-pub struct Entry {
-    looped: bool,
-    loop_start: u32,
-    loop_end: u32,
-    tune: i8,
-    data: String,
-}
-
-impl fmt::Debug for Entry {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{{\"loop\": {}, \"loop_start\": {}, \"loop_end\": {}, \"tune\": {}, \"data\": \"{}\"}}",
-            self.looped, self.loop_start, self.loop_end, self.tune, self.data
-        )
-    }
-}
-
 pub fn get_samples(
     source_dir: &PathBuf,
-    build_dir: &PathBuf,
     instrument: &str,
     expression: &str,
-) -> Result<HashMap<String, Entry>> {
-    let mut samples: HashMap<String, Entry> = HashMap::new();
+) -> Result<HashMap<String, String>> {
+    let root_dir = env::current_dir()?;
+    let temp_dir = root_dir.join("temp");
+
+    clear_directory(&temp_dir);
+
+    let mut samples: HashMap<String, String> = HashMap::new();
 
     let mut i: f32 = 0.0;
     let len = read_dir(source_dir).unwrap().count() as f32;
@@ -49,7 +36,7 @@ pub fn get_samples(
         if metadata.is_file() == true && path.extension().unwrap() == "wav" {
             let src = path.to_str().unwrap();
             let pitch = get_pitch(&src).unwrap();
-            let dest = build_dir.join(format!("{}.mp3", pitch));
+            let dest = temp_dir.join(format!("{}.mp3", pitch));
             let dest = dest.as_path();
             let dest = dest.to_str().unwrap();
 
@@ -63,19 +50,15 @@ pub fn get_samples(
 
             match result {
                 Ok(_) => (),
-                Err(_) => continue,
+                Err(_) => {
+                    println!("Error converting. Is Lame installed?");
+                    continue;
+                }
             }
 
             let data = read(dest).unwrap();
             let data = encode(&data);
-            let sample = Entry {
-                looped: false,
-                loop_start: 0,
-                loop_end: 0,
-                tune: 0,
-                data: data,
-            };
-            samples.insert(pitch, sample);
+            samples.insert(pitch, format!("data:audo/mpeg;base64,{}", data));
 
             i = i + 1.0;
             next(&instrument, &expression, &len, &i);
@@ -88,6 +71,8 @@ pub fn get_samples(
         expression,
         (0..30 - 1).map(|_| " ").collect::<String>()
     );
+
+    delete_directory(&temp_dir);
 
     Ok(samples)
 }

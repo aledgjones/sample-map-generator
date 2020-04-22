@@ -1,5 +1,5 @@
 [package]
-name = "soundsfont-generator"
+name = "sample-map-generator"
 version = "0.1.0"
 authors = ["Aled Jones <aledjones.viola@gmail.com>"]
 edition = "2018"
