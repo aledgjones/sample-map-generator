@@ -1,5 +1,4 @@
 #[macro_use]
-extern crate lazy_static;
 extern crate base64;
 
 mod converter;
@@ -16,7 +15,7 @@ use std::io::Result;
 fn main() -> Result<()> {
     let root_dir = env::current_dir()?;
     let source_dir = root_dir.join("source");
-    let output_dir = root_dir.join("output");
+    let output_dir = root_dir.join("../output");
 
     clear_directory(&output_dir);
     let mut buffer = File::create(output_dir.join("contents.csv"))?;
@@ -40,22 +39,18 @@ fn main() -> Result<()> {
             let expression = tokens[1];
 
             let source = source_dir.join(filename);
+
+            let samples = match get_samples(&source, &instrument, &expression) {
+                Ok(s) => s,
+                Err(_) => continue,
+            };
+
             let output = output_dir.join(instrument);
             create_directory(&output);
 
-            let samples = get_samples(&source, &instrument, &expression).unwrap();
-            let json = format!(
-                "{{\n\
-                    \"envelope\": {{\
-                        \"attack\": 0.0,\
-                        \"release\": 0.7\
-                    }},\n\
-                    \"samples\": {:?}\n\
-                }}",
-                samples
-            );
+            let json = format!("{:#?}", samples);
 
-            write(output.join(format!("{}.json", expression)), json)?;
+            write(output.join(format!("{}.json", expression)), json).unwrap();
             write!(
                 buffer,
                 "{}, {}, {}/{}/{}.json\n",

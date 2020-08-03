@@ -2,7 +2,6 @@ extern crate regex;
 
 use regex::Regex;
 use std::fs::{create_dir, metadata, remove_dir_all};
-use std::option::Option;
 use std::path::PathBuf;
 
 pub fn delete_directory(dir: &PathBuf) {
@@ -27,39 +26,21 @@ pub fn create_directory(dir: &PathBuf) {
     }
 }
 
-pub fn get_pitch(filename: &str) -> Option<String> {
-    lazy_static! {
-        static ref PITCH_ACCIDENTAL_OCTAVE: Regex =
-            Regex::new(r"([A-Ga-g]{1})([#b]{0,1})([0-9]{1})").unwrap();
-    }
-    let parts = PITCH_ACCIDENTAL_OCTAVE.captures(&filename);
-    match parts {
-        None => (),
-        Some(parts) => {
-            return Some(format!(
-                "{}{}{}",
-                &parts[1].to_uppercase(),
-                &parts[2],
-                &parts[3]
-            ))
-        }
-    }
+pub fn get_pitch(filename: &str) -> u8 {
+    let parts = Regex::new(r"([A-Ga-g]{1})([#b]{0,1})([0-9]{1})")
+        .unwrap()
+        .captures(&filename)
+        .unwrap();
+    let letter = parts[1].to_uppercase();
+    let accidental = String::from(&parts[2]);
+    let octave = parts[3].parse::<u8>().unwrap();
 
-    lazy_static! {
-        static ref OCTAVE_PITCH_ACCIDENTAL: Regex =
-            Regex::new(r"([0-9]{1})_{1}([A-Ga-g]{1})([#b]{0,1})").unwrap();
-    }
-    let parts = OCTAVE_PITCH_ACCIDENTAL.captures(&filename);
+    let step = ["C", "D", "E", "F", "G", "A", "B"]
+        .iter()
+        .position(|&r| r == letter)
+        .unwrap();
+    let alteration: u8 = if accidental == "#" { 1 } else { 0 };
+    let position = [0, 2, 4, 5, 7, 9, 11].get(step).unwrap() + alteration;
 
-    match parts {
-        None => return None,
-        Some(parts) => {
-            return Some(format!(
-                "{}{}{}",
-                &parts[2].to_uppercase(),
-                &parts[3],
-                &parts[1]
-            ))
-        }
-    }
+    12 + position + (12 * octave)
 }
