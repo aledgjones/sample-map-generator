@@ -15,7 +15,7 @@ use std::io::Result;
 fn main() -> Result<()> {
     let root_dir = env::current_dir()?;
     let source_dir = root_dir.join("source");
-    let output_dir = root_dir.join("../output");
+    let output_dir = root_dir.join("../solo-composer-ui/public/patches");
 
     clear_directory(&output_dir);
     let mut buffer = File::create(output_dir.join("contents.csv"))?;

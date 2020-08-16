@@ -83,10 +83,10 @@ pub fn get_samples(
     for result in reader.records() {
         let result = result.unwrap();
 
-        let filename = result.get(0).unwrap();
-        let pitch = get_pitch(filename);
-        let attack: f32 = result.get(1).unwrap().parse::<f32>().unwrap();
-        let release: f32 = result.get(2).unwrap().parse::<f32>().unwrap();
+        let pitch = result.get(0).unwrap().parse::<u8>().unwrap();
+        let filename = result.get(1).unwrap();
+        let attack: f32 = result.get(2).unwrap().parse::<f32>().unwrap();
+        let release: f32 = result.get(3).unwrap().parse::<f32>().unwrap();
 
         let src = source_dir.join(filename);
         let src = src.to_str().unwrap();
