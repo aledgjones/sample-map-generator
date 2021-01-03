@@ -1,5 +1,5 @@
 use crate::progress::{next, start};
-use crate::utils::{clear_directory, delete_directory, get_pitch};
+use crate::utils::{clear_directory, delete_directory};
 use base64::encode;
 use csv;
 use regex::Regex;

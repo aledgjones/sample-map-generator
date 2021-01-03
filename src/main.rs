@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate base64;
-
 mod converter;
 mod progress;
 mod utils;
@@ -15,7 +12,7 @@ use std::io::Result;
 fn main() -> Result<()> {
     let root_dir = env::current_dir()?;
     let source_dir = root_dir.join("source");
-    let output_dir = root_dir.join("../solo-composer-ui/public/patches");
+    let output_dir = root_dir.join("../solo-composer-ui/static/patches");
 
     clear_directory(&output_dir);
     let mut buffer = File::create(output_dir.join("contents.csv"))?;
