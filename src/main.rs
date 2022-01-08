@@ -5,8 +5,7 @@ mod utils;
 use crate::converter::get_samples;
 use crate::utils::{clear_directory, create_directory};
 use std::env;
-use std::fs::{read_dir, write, File};
-use std::io::prelude::*;
+use std::fs::{read_dir, write};
 use std::io::Result;
 
 fn main() -> Result<()> {
@@ -14,10 +13,9 @@ fn main() -> Result<()> {
     let source_dir = root_dir.join("source");
     let output_dir = root_dir.join("../solo-composer-ui/static/patches");
 
-    clear_directory(&output_dir);
-    let mut buffer = File::create(output_dir.join("contents.csv"))?;
+    let mut content: Vec<String> = Vec::new();
 
-    write!(buffer, "Instrument, Technique, Path\n")?;
+    clear_directory(&output_dir);
 
     // clear console
     print!("\x1B[2J");
@@ -46,15 +44,14 @@ fn main() -> Result<()> {
             create_directory(&output);
 
             let json = format!("{:#?}", samples);
-
             write(output.join(format!("{}.json", expression)), json).unwrap();
-            write!(
-                buffer,
-                "{}, {}, {}/{}/{}.json\n",
-                instrument, expression, "/output", instrument, expression
-            )?;
+
+            let url = format!("{}/{}/{}.json", "/patches", instrument, expression);
+            content.push(url);
         }
     }
+
+    write(output_dir.join("contents.json"), format!("{:#?}", content)).unwrap();
 
     Ok(())
 }
