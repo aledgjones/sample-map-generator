@@ -91,7 +91,7 @@ pub fn get_samples(
         let src = source_dir.join(filename);
         let src = src.to_str().unwrap();
 
-        let dest = temp_dir.join(format!("{}.ogg", pitch));
+        let dest = temp_dir.join(format!("{}.aac", pitch));
         let dest = dest.to_str().unwrap();
 
         // https://trac.ffmpeg.org/wiki/AudioVolume
@@ -145,7 +145,7 @@ pub fn get_samples(
             pitch,
             attack,
             release,
-            data: format!("data:audo/ogg;base64,{}", data),
+            data: format!("data:audo/aac;base64,{}", data),
         });
 
         i = i + 1.0;
